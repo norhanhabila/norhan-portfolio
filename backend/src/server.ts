@@ -12,8 +12,15 @@ const PORT = process.env.PORT || 5000;
 // Enable CORS for frontend connection (standard Vite dev server runs on port 5173/5174/4173)
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps) or matching localhost on any port
-    if (!origin || /^https?:\/\/localhost(:\d+)?$/.test(origin) || /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches allowed domains
+    const isLocalhost = /^https?:\/\/localhost(:\d+)?$/.test(origin) || /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin);
+    const isProdFrontend = origin === process.env.FRONTEND_URL;
+    const isRenderOrVercel = /\.onrender\.com$/.test(origin) || /\.vercel\.app$/.test(origin);
+    
+    if (isLocalhost || isProdFrontend || isRenderOrVercel) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
