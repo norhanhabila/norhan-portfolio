@@ -14,12 +14,12 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
-    
+
     // Check if origin matches allowed domains
     const isLocalhost = /^https?:\/\/localhost(:\d+)?$/.test(origin) || /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin);
     const isProdFrontend = origin === process.env.FRONTEND_URL;
     const isRenderOrVercel = /\.onrender\.com$/.test(origin) || /\.vercel\.app$/.test(origin);
-    
+
     if (isLocalhost || isProdFrontend || isRenderOrVercel) {
       callback(null, true);
     } else {
@@ -69,12 +69,13 @@ app.post('/api/contact', async (req: Request, res: Response) => {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_PORT === '465', // true for 465, false for 587/25
+      secure: process.env.SMTP_PORT === '465',
       auth: {
         user: smtpUser,
         pass: smtpPass,
       },
-    });
+      family: 4
+    } as any);
 
     const mailOptions = {
       from: `"${name}" <${smtpUser}>`, // Gmail requires the "from" to match authenticated user
@@ -108,7 +109,7 @@ ${message}`,
     // Send email
     await transporter.sendMail(mailOptions);
     console.log('✅ Email successfully sent to ' + (process.env.TO_EMAIL || 'norhan.habila@gmail.com'));
-    
+
     return res.status(200).json({
       success: true,
       message: `Thank you for reaching out, ${name}! Your message has been sent to Norhan's inbox. She will get back to you shortly.`
